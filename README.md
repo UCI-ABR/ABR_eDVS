@@ -9,7 +9,7 @@ IMPORTANT FILES:
 
 - AndroidManifest.xml, pay attention to: uses-feature usb.host, intent-filter USB_DEVICE_ATTACHED, and meta-data device_filter
       
-- res/xml folder: file device_filter (list of devices that will be recognized when plugged to the phone, and start the app automatically)
+- res/xml folder: device_filter.xml (list of devices that will be recognized when plugged to the phone, and start the app automatically)
 
 - libs folder: d2xx.jar (FTDI libary used for serial over USB communication with FTDI Chip devices)
 
