@@ -85,7 +85,10 @@ public class EDVS4337SerialUsbStreamProcessor
 		public EDVS4337EventImuType type;
 		public long                 ts;
 	}
-
+	
+	/**
+	 * 
+	 */
 	public EDVS4337SerialUsbStreamProcessor() 
 	{
 		mEvents 				= new ArrayList<EDVS4337Event>();

@@ -5,6 +5,25 @@ Android App used to connect to a eDVS camera using serial over USB.
 In order to read the sensory information sent by the eDVS from the Android phone, we used the JAVA D2xx driver and library provided by FTDI Chip. 
 D2xx is used for FTDI USB to UART devices interaction.
 
+IMPORTANT:
+
+- in the AndroidManifest.xml:
+
+	<uses-feature android:name="android.hardware.usb.host" />
+	...
+    <intent-filter>
+    <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+    </intent-filter>
+
+    <meta-data
+      android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+      android:resource="@xml/device_filter" />
+      
+- in res/xml folder, file device_filter (list of devices that will be recognized when plugged to the phone)
+
+- in libs folder, d2xx.jar (FTDI libary used for serial over USB communication)
+
+
 For more information, go to:
 https://neuromorphs.net/nm/wiki/AndroideDVS
 

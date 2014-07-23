@@ -68,7 +68,7 @@ public class MainActivity extends Activity
 	protected void onPause()
 	{
 		handler.removeCallbacks(runnable);		
-		if(the_thread != null) the_thread.stop_thread();		
+		the_thread.stop_thread();		
 		super.onPause();
 	}
 	
@@ -85,6 +85,6 @@ public class MainActivity extends Activity
 		text_gui = "Bytes read: " + the_thread.get_bytesRead();
 		text.setText(text_gui);
 		
-		handler.postDelayed(runnable, 40);
+		handler.postDelayed(runnable, 50);
 	}
 }

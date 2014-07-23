@@ -16,7 +16,7 @@ import com.ftdi.j2xx.FT_Device;
 public class Thread_eDVS extends Thread
 {
 	static final String TAG = "Thread_read";	
-	
+
 	/** for stopping the thread*/
 	boolean STOP = false;
 
@@ -31,7 +31,6 @@ public class Thread_eDVS extends Thread
 
 	/** Serial FTDI device connected to the phone (e.g. eDVS)*/
 	FT_Device ftDevice;	
-
 
 	//******************************** Parameters used for serial connection ******************************/
 	int baudRate			= 4000000; 	/* baud rate  921600*/
@@ -67,17 +66,18 @@ public class Thread_eDVS extends Thread
 		catch (D2xxManager.D2xxException e) {Log.e("FTDI_HT","getInstance fail!!");}
 	}
 
-	//****************************************************** main loop of the thread *********************************************************/
-
+	/**
+	 * main loop of the thread
+	 */
 	@Override
 	public final void run() 
 	{	
-		//initialize serial connection
+		//initialize serial connection, and send E+ to eDVS
 		init();
 
 		while(STOP == false)
 		{	
-			try {sleep(10);} catch (InterruptedException e) {Log.e(TAG,"pb sleep");}
+			try {sleep(10);} catch (InterruptedException e) {Log.e(TAG,"pb sleep" +e);}
 
 			//synchronized block of code so the activity handler and this Thread_eDVS do not access data_image at the same time (handler calls get_image())
 			synchronized(this)
@@ -115,6 +115,29 @@ public class Thread_eDVS extends Thread
 	}
 
 	/**
+	 * function that will create the device list, connect to FTDI device (eDVS), configure the serial connection, and finally sends the command E+ causing the eDVS to start sending events. 
+	 */
+	public void init()
+	{
+		int DevCount = ftD2xx.createDeviceInfoList(context_activity);
+
+		if(DevCount > 0)
+		{
+			ftDevice = ftD2xx.openByIndex(context_activity, 0);					
+			ftDevice.setBitMode((byte) 0, D2xxManager.FT_BITMODE_RESET); 		// reset to UART mode for 232 devices
+			ftDevice.setBaudRate(baudRate);
+			ftDevice.setDataCharacteristics(dataBit, stopBit, parity);
+			ftDevice.setFlowControl(flowControl, XON, XOFF);
+
+			//send command to eDVS to start sending events
+			String ss = new String("E+\n");
+			byte[] text = ss.getBytes();
+
+			if(ftDevice.isOpen()) ftDevice.write(text, text.length);	
+		}
+	}
+
+	/**
 	 * 
 	 * @return
 	 */
@@ -145,35 +168,11 @@ public class Thread_eDVS extends Thread
 	{
 		if(ftDevice != null)
 		{
-			if(ftDevice.isOpen() == true)ftDevice.close();
+			if(ftDevice.isOpen()) ftDevice.close();
 		}
 
 		STOP = true;
 	}
-
-	/**
-	 * function that will create the device list, connect to FTDI device, configure the serial connection, and finally sends the command E+ causing the eDVS to start sending events. 
-	 */
-	public void init()
-	{
-		if(ftDevice == null || ftDevice.isOpen() == false)
-		{
-			int DevCount = ftD2xx.createDeviceInfoList(context_activity);
-
-			if(DevCount > 0)
-			{
-				ftDevice = ftD2xx.openByIndex(context_activity, 0);					
-				ftDevice.setBitMode((byte) 0, D2xxManager.FT_BITMODE_RESET); 		// reset to UART mode for 232 devices
-				ftDevice.setBaudRate(baudRate);
-				ftDevice.setDataCharacteristics(dataBit, stopBit, parity);
-				ftDevice.setFlowControl(flowControl, XON, XOFF);
-
-				//send command to eDVS to start sending events
-				String ss = new String("E+\n");
-				byte[] text = ss.getBytes();
-
-				if(ftDevice.isOpen()) ftDevice.write(text, text.length);	
-			}
-		}
-	}
 }
+
+
