@@ -116,12 +116,12 @@ public class EDVS4337SerialUsbStreamProcessor
 			int c = (int)stream[n];
 			mEDVSinCollection[mInputProcessingIndex] = c; 
 			mInputProcessingIndex++;
-			
-			//create new event to be added to the list
-			EDVS4337Event e = new EDVS4337Event();
 		
 			if (((mEDVSinCollection[0]) & 0x80) == 0x80) 
 			{
+				//create new event to be added to the list
+				EDVS4337Event e = new EDVS4337Event();
+				
 				if ((eventMode == EDVS4337EventMode.TS_MODE_E0) && (mInputProcessingIndex == 2)) 
 				{	
 					e.x = ((mEDVSinCollection[0]) & 0x7F);

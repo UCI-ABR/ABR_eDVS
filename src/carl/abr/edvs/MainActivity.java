@@ -1,7 +1,6 @@
 package carl.abr.edvs;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ImageView;
@@ -30,8 +29,6 @@ public class MainActivity extends Activity
 	/** runnable used to update GUI*/
 	Runnable runnable;
 
-	String text_gui;
-
 
 	//****************************************************** Activity functions *********************************************************/
 	@Override
@@ -41,7 +38,6 @@ public class MainActivity extends Activity
 		setContentView(R.layout.activity_main);
 		text = (TextView) findViewById(R.id.text_gui);
 		iv = (ImageView) findViewById(R.id.an_imageView);
-		text_gui = new String();
 	}
 
 
@@ -77,14 +73,8 @@ public class MainActivity extends Activity
 	 */
 	private void update_gui()
 	{		
-		//get image from thread and scale it
-		Bitmap bm2 = Bitmap.createScaledBitmap(the_thread.get_image(), 500, 500, false);
-		iv.setImageBitmap(bm2);		
-		
-		//get nb bytes read from thread and display it
-		text_gui = "Bytes read: " + the_thread.get_bytesRead();
-		text.setText(text_gui);
-		
+		iv.setImageBitmap(the_thread.get_image());					//get image from thread and display it
+		text.setText("Bytes read: " + the_thread.get_bytesRead());	//get nb bytes read from thread and display it
 		handler.postDelayed(runnable, 50);
 	}
 }
