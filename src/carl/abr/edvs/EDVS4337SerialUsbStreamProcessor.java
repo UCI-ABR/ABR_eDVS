@@ -97,9 +97,12 @@ public class EDVS4337SerialUsbStreamProcessor
 	}
 	
 	/**
-	 * do stuff...
-	 * @param stream : data to process
-	 **/
+	 * 
+	 * @param stream
+	 * @param bytesRead
+	 * @param eventMode
+	 * @return
+	 */
 	public ArrayList<EDVS4337Event> process(byte[] stream, int bytesRead, EDVS4337EventMode eventMode) 
 	{		
 		if(mEvents.isEmpty()==false) 	mEvents.clear();

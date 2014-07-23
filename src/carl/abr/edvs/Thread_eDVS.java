@@ -15,12 +15,10 @@ import com.ftdi.j2xx.FT_Device;
  */
 public class Thread_eDVS extends Thread
 {
-	static final String TAG = "Thread_read";
-
+	static final String TAG = "Thread_read";	
+	
 	/** for stopping the thread*/
 	boolean STOP = false;
-
-	final int USB_DATA_BUFFER = 64000; //2048
 
 	/** Reference to context of the main activity*/
 	Context context_activity;	
@@ -29,7 +27,7 @@ public class Thread_eDVS extends Thread
 	EDVS4337SerialUsbStreamProcessor processor;
 
 	/** FTDI manager*/
-	static D2xxManager ftD2xx;
+	D2xxManager ftD2xx;
 
 	/** Serial FTDI device connected to the phone (e.g. eDVS)*/
 	FT_Device ftDevice;	
@@ -41,10 +39,11 @@ public class Thread_eDVS extends Thread
 	byte dataBit 			= D2xxManager.FT_DATA_BITS_8; 		
 	byte parity 			= D2xxManager.FT_PARITY_NONE; 		
 	short flowControl 		= D2xxManager.FT_FLOW_RTS_CTS; 	
-	final byte XON 			= 0x11;    /* Resume transmission */
-	final byte XOFF			= 0x13;    /* Pause transmission */
+	byte XON 				= 0x11;    /* Resume transmission */
+	byte XOFF				= 0x13;    /* Pause transmission */
 
 	//******************************** variables used to read data ******************************/
+	int USB_DATA_BUFFER 	= 64000; //2048
 	int bytesRead			= 0;
 	int readcount			= 0;
 	int totalBytesRead 		= 0;
@@ -55,7 +54,7 @@ public class Thread_eDVS extends Thread
 
 	/**
 	 * 
-	 * @param act
+	 * @param ctxt
 	 */
 	Thread_eDVS(Context ctxt)
 	{
@@ -75,7 +74,7 @@ public class Thread_eDVS extends Thread
 	{	
 		//initialize serial connection
 		init();
-		
+
 		while(STOP == false)
 		{	
 			try {sleep(10);} catch (InterruptedException e) {Log.e(TAG,"pb sleep");}
@@ -99,17 +98,14 @@ public class Thread_eDVS extends Thread
 						//process data to get list of events
 						ArrayList<EDVS4337Event> events = processor.process(usbdata, bytesRead, EDVS4337SerialUsbStreamProcessor.EDVS4337EventMode.TS_MODE_E0);
 
-						if(events.isEmpty() == false)
-						{
-							for(int i=0; i<events.size(); i++)
-							{	
-								EDVS4337Event event = events.get(i);
+						//create image data from events
+						for(int i=0; i<events.size(); i++)
+						{	
+							EDVS4337Event event = events.get(i);
 
-								if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000;
-								else 			 data_image[128*event.x + event.y] = 0xFF00FF00;
-							}	
+							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000;
+							else 			 data_image[128*event.x + event.y] = 0xFF00FF00;
 						}
-
 					}
 				}
 				else Log.e(TAG,"device closed");
@@ -127,7 +123,7 @@ public class Thread_eDVS extends Thread
 	}
 
 	/**
-	 * 
+	 * function called by activity handler to get image from events and data_image
 	 * @return
 	 */
 	public synchronized Bitmap get_image()
@@ -149,7 +145,7 @@ public class Thread_eDVS extends Thread
 		{
 			if(ftDevice.isOpen() == true)ftDevice.close();
 		}
-		
+
 		STOP = true;
 	}
 
@@ -160,10 +156,8 @@ public class Thread_eDVS extends Thread
 	{
 		if(ftDevice == null || ftDevice.isOpen() == false)
 		{
-			Log.e(TAG,"onResume - reconnect");
-
 			int DevCount = ftD2xx.createDeviceInfoList(context_activity);
-			
+
 			if(DevCount > 0)
 			{
 				ftDevice = ftD2xx.openByIndex(context_activity, 0);					
@@ -175,7 +169,7 @@ public class Thread_eDVS extends Thread
 				//send command to eDVS to start sending events
 				String ss = new String("E+\n");
 				byte[] text = ss.getBytes();
-				
+
 				if(ftDevice.isOpen()) ftDevice.write(text, text.length);	
 			}
 		}
