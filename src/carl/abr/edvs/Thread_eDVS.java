@@ -73,6 +73,7 @@ public class Thread_eDVS extends Thread
 	@Override
 	public final void run() 
 	{	
+		//initialize serial connection
 		init();
 		
 		while(STOP == false)
@@ -153,8 +154,7 @@ public class Thread_eDVS extends Thread
 	}
 
 	/**
-	 * function that will create the device list calling {@link #createDeviceList()}}, connect to FTDI device by calling  {@link #connectFunction()}, configure the serial connection by calling
-	 *  {@link #setConfig()}, and finally sends the command E+ {@link #sendData(int, byte[])} causing the eDVS to start sending events. 
+	 * function that will create the device list, connect to FTDI device, configure the serial connection, and finally sends the command E+ causing the eDVS to start sending events. 
 	 */
 	public void init()
 	{
