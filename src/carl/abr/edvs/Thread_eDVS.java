@@ -1,6 +1,7 @@
 package carl.abr.edvs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -49,6 +50,9 @@ public class Thread_eDVS extends Thread
 
 	/** Data that will be mapped into a bitmap for display*/
 	int[] data_image;
+	
+	/** Data that will be read from the eDVS over USB*/
+	byte[] usbdata;
 
 
 	/**
@@ -57,9 +61,10 @@ public class Thread_eDVS extends Thread
 	 */
 	Thread_eDVS(Context ctxt)
 	{
-		context_activity = ctxt;
-		processor = new EDVS4337SerialUsbStreamProcessor();
-		data_image = new int[128*128];
+		context_activity 	= ctxt;
+		processor 			= new EDVS4337SerialUsbStreamProcessor();
+		data_image 			= new int[128*128];
+		usbdata 			= new byte[USB_DATA_BUFFER];
 
 		//get ftdi manager		
 		try {ftD2xx = D2xxManager.getInstance(context_activity);}
@@ -84,8 +89,6 @@ public class Thread_eDVS extends Thread
 			{	
 				if(ftDevice.isOpen())
 				{
-					byte[] usbdata = new byte[USB_DATA_BUFFER];
-
 					//get nb of bytes in receive queue
 					readcount = ftDevice.getQueueStatus();
 					if (readcount > 0) 
@@ -107,6 +110,9 @@ public class Thread_eDVS extends Thread
 							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000;
 							else 			 data_image[128*event.x + event.y] = 0xFF00FF00;
 						}
+						
+						//reset usbdata
+						Arrays.fill(usbdata, (byte) 0);
 					}
 				}
 				else Log.e(TAG,"device closed");
@@ -115,9 +121,9 @@ public class Thread_eDVS extends Thread
 	}
 
 	/**
-	 * function that will create the device list, connect to FTDI device (eDVS), configure the serial connection, and finally sends the command E+ causing the eDVS to start sending events. 
+	 * function that will create the FTDI device list, connect to first device (eDVS), configure the serial connection, and finally send the command E+ causing the eDVS to start sending events. 
 	 */
-	public void init()
+	private void init()
 	{
 		int DevCount = ftD2xx.createDeviceInfoList(context_activity);
 
@@ -155,8 +161,11 @@ public class Thread_eDVS extends Thread
 	{
 		Bitmap ima = Bitmap.createBitmap(data_image, 128, 128,Bitmap.Config.ARGB_8888);
 
-		for(int i=0; i<128*128; i++)
-			data_image[i] = 0xFF000000;	//reset data_image
+		//reset data_image
+		Arrays.fill(data_image, 0xFF000000);
+		
+//		for(int i=0; i<128*128; i++)
+//			data_image[i] = 0xFF000000;	//reset data_image
 
 		return ima;
 	}

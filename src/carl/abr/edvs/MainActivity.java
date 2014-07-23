@@ -41,7 +41,7 @@ public class MainActivity extends Activity
 		setContentView(R.layout.activity_main);
 		text = (TextView) findViewById(R.id.text_gui);
 		iv = (ImageView) findViewById(R.id.an_imageView);
-		text_gui = new String("Text GUI");
+		text_gui = new String();
 	}
 
 
