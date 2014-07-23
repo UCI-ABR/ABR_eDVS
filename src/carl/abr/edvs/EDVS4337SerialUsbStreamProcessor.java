@@ -3,20 +3,23 @@ package carl.abr.edvs;
 import java.util.ArrayList;
 
 /**
- *
- * @author julien
- */
+*
+* @author Julien Martel, 2014
+*/
 public class EDVS4337SerialUsbStreamProcessor 
 {
-	static final String TAG = "Serial processor";
+	static final String TAG = "Serial processor";	
+
+	ArrayList<EDVS4337Event>     mEvents;
+	ArrayList<EDVS4337ImuEvent>  mImuEvents;
 	
+	String						mAsciiData;
+	int[]                      	mEDVSinCollection;
+	long                        mEDVSTimestamp;
+	int							mInputProcessingIndex;
 
-	private String							mAsciiData;
-	private int[]                      		mEDVSinCollection;
-	private long                        	mEDVSTimestamp;
-	private int								mInputProcessingIndex;
-
-	public enum EDVS4337EventMode {
+	public enum EDVS4337EventMode 
+	{
 		TS_MODE_E0,
 		TS_MODE_E1,
 		TS_MODE_E2,
@@ -24,23 +27,26 @@ public class EDVS4337SerialUsbStreamProcessor
 		TS_MODE_E4
 	}
 
-	public enum EDVS4337EventImuType {
+	public enum EDVS4337EventImuType 
+	{
 		IMU_GYRO,
 		IMU_ACCELERO,
 		IMU_COMPASS,
 		IMU_UNKNOWN
 	}
 
-	public class EDVS4337Event {
-
-		EDVS4337Event(int x, int y, int p, long ts) {
+	public class EDVS4337Event 
+	{
+		EDVS4337Event(int x, int y, int p, long ts) 
+		{
 			this.x = x;
 			this.y = y;
 			this.p = p;
 			this.ts = ts;
 		}
 
-		EDVS4337Event() {
+		EDVS4337Event() 
+		{
 			this.x = 0;
 			this.y = 0;
 			this.p = 0;
@@ -53,9 +59,10 @@ public class EDVS4337SerialUsbStreamProcessor
 		public long ts;
 	}
 
-	public class EDVS4337ImuEvent {
-
-		EDVS4337ImuEvent(int x, int y, int z, EDVS4337EventImuType type, long ts) {
+	public class EDVS4337ImuEvent 
+	{
+		EDVS4337ImuEvent(int x, int y, int z, EDVS4337EventImuType type, long ts) 
+		{
 			this.x = x;
 			this.y = y;
 			this.z = z;
@@ -63,7 +70,8 @@ public class EDVS4337SerialUsbStreamProcessor
 			this.ts = ts;
 		}
 
-		EDVS4337ImuEvent() {
+		EDVS4337ImuEvent() 
+		{
 			this.x = 0;
 			this.y = 0;
 			this.z = 0;
@@ -78,39 +86,38 @@ public class EDVS4337SerialUsbStreamProcessor
 		public long                 ts;
 	}
 
-	public EDVS4337SerialUsbStreamProcessor() {
-	
-
-		mEDVSinCollection = new int[512];
-		mAsciiData = new String();
-
-		mEDVSTimestamp = 0;
-		
-		mInputProcessingIndex = 0;
+	public EDVS4337SerialUsbStreamProcessor() 
+	{
+		mEvents 				= new ArrayList<EDVS4337Event>();
+		mImuEvents 				= new ArrayList<EDVS4337ImuEvent>();
+		mEDVSinCollection 		= new int[512];
+		mAsciiData 				= new String();
+		mEDVSTimestamp 			= 0;		
+		mInputProcessingIndex 	= 0;
 	}
 	
+	/**
+	 * do stuff...
+	 * @param stream : data to process
+	 **/
 	public ArrayList<EDVS4337Event> process(byte[] stream, int bytesRead, EDVS4337EventMode eventMode) 
-	{	
-		ArrayList<EDVS4337Event>     mEvents = new ArrayList<EDVS4337Event>();
-		ArrayList<EDVS4337ImuEvent>  mImuEvents = new ArrayList<EDVS4337ImuEvent>();
+	{		
+		if(mEvents.isEmpty()==false) 	mEvents.clear();
+		if(mImuEvents.isEmpty()==false) mImuEvents.clear();
 		
 		for (int n = 0; n < bytesRead; n++) 
-		{			
-					
-			int c=0;
-			//if(bytesRead > n)	
-				c = (int)stream[n];
-//			else break;
-			
+		{								
+			int c = (int)stream[n];
 			mEDVSinCollection[mInputProcessingIndex] = c; 
 			mInputProcessingIndex++;
+			
+			//create new event to be added to the list
+			EDVS4337Event e = new EDVS4337Event();
 		
 			if (((mEDVSinCollection[0]) & 0x80) == 0x80) 
 			{
 				if ((eventMode == EDVS4337EventMode.TS_MODE_E0) && (mInputProcessingIndex == 2)) 
-				{
-					EDVS4337Event e = new EDVS4337Event();
-					
+				{	
 					e.x = ((mEDVSinCollection[0]) & 0x7F);
 					e.y = ((mEDVSinCollection[1]) & 0x7F);
 					e.p = (((mEDVSinCollection[1]) & 0x80) >> 7);
@@ -122,9 +129,7 @@ public class EDVS4337SerialUsbStreamProcessor
 				else if ((eventMode == EDVS4337EventMode.TS_MODE_E1) && (mInputProcessingIndex > 2)) 
 				{
 					if ((stream[n] & 0x80) == 0x80) 
-					{	
-						EDVS4337Event e = new EDVS4337Event();
-						
+					{							
 						e.x = ((mEDVSinCollection[0]) & 0x7F);
 						e.y = ((mEDVSinCollection[1]) & 0x7F);
 						e.p = 1 - (((mEDVSinCollection[1]) & 0x80) >> 7);
@@ -148,9 +153,7 @@ public class EDVS4337SerialUsbStreamProcessor
 					}
 				}
 				else if ((eventMode == EDVS4337EventMode.TS_MODE_E2) && (mInputProcessingIndex == 4)) 
-				{
-					EDVS4337Event e = new EDVS4337Event();
-					
+				{					
 					e.x = ((mEDVSinCollection[0]) & 0x7F);
 					e.y = ((mEDVSinCollection[1]) & 0x7F);
 					e.p = 1 - (((mEDVSinCollection[1]) & 0x80) >> 7);
@@ -161,9 +164,7 @@ public class EDVS4337SerialUsbStreamProcessor
 					mInputProcessingIndex = 0;
 				}
 				else if ((eventMode == EDVS4337EventMode.TS_MODE_E3) && (mInputProcessingIndex == 5)) 
-				{
-					EDVS4337Event e = new EDVS4337Event();
-					
+				{					
 					e.x = ((mEDVSinCollection[0]) & 0x7F);
 					e.y = ((mEDVSinCollection[1]) & 0x7F);
 					e.p = 1 - (((mEDVSinCollection[1]) & 0x80) >> 7);
@@ -175,9 +176,7 @@ public class EDVS4337SerialUsbStreamProcessor
 					mInputProcessingIndex = 0;
 				}
 				else if ((eventMode == EDVS4337EventMode.TS_MODE_E4) && (mInputProcessingIndex == 6)) 
-				{
-					EDVS4337Event e = new EDVS4337Event();
-					
+				{					
 					e.x = ((mEDVSinCollection[0]) & 0x7F);
 					e.y = ((mEDVSinCollection[1]) & 0x7F);
 					e.p = 1 - (((mEDVSinCollection[1]) & 0x80) >> 7);
