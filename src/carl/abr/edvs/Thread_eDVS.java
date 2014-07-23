@@ -79,6 +79,7 @@ public class Thread_eDVS extends Thread
 		{	
 			try {sleep(10);} catch (InterruptedException e) {Log.e(TAG,"pb sleep");}
 
+			//synchronized block of code so the activity handler and this Thread_eDVS do not access data_image at the same time (handler calls get_image())
 			synchronized(this)
 			{	
 				if(ftDevice.isOpen())
@@ -123,7 +124,8 @@ public class Thread_eDVS extends Thread
 	}
 
 	/**
-	 * function called by activity handler to get image from events and data_image
+	 * function called by activity handler to get image from events and data_image.
+	 * Synchronized so the handler and the Thread_eDVS do not access data_image at the same time
 	 * @return
 	 */
 	public synchronized Bitmap get_image()
