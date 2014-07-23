@@ -7,21 +7,11 @@ D2xx is used for FTDI USB to UART devices interaction.
 
 IMPORTANT:
 
-- in the AndroidManifest.xml:
-
-	<uses-feature android:name="android.hardware.usb.host" />
-	...
-    <intent-filter>
-    <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
-    </intent-filter>
-
-    <meta-data
-      android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-      android:resource="@xml/device_filter" />
+- in AndroidManifest.xml: feature usb.host, intent-filter USB_DEVICE_ATTACHED, and meta-data device_filter
       
 - in res/xml folder, file device_filter (list of devices that will be recognized when plugged to the phone)
 
-- in libs folder, d2xx.jar (FTDI libary used for serial over USB communication)
+- in libs folder, d2xx.jar (FTDI libary used for serial over USB communication with FTDI Chip devices)
 
 
 For more information, go to:
