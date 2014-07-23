@@ -111,7 +111,7 @@ public class Thread_eDVS extends Thread
 							else 			 data_image[128*event.x + event.y] = 0xFF00FF00;
 						}
 						
-						//reset usbdata
+						//reset usbdata...might not need this
 						Arrays.fill(usbdata, (byte) 0);
 					}
 				}
