@@ -14,7 +14,13 @@ import com.ftdi.j2xx.FT_Device;
  * Main thread taking care of initializing serial connection, and reading data sent by the eDVS.
  * For documentation on the j2xx library, see: 
  * http://www.ftdichip.com/Support/Documents/AppNotes/AN_233_Java_D2xx_for_Android_API_User_Manual.pdf
+ * 
  * @author Nicolas Oros and Julien Martel, 2014
+ * 
+ * https://github.com/UCI-ABR
+ * http://www.socsci.uci.edu/~jkrichma/ABR/
+* https://groups.google.com/forum/#!forum/android-based-robotics
+* https://neuromorphs.net/nm/wiki/AndroideDVS
  */
 public class Thread_eDVS extends Thread
 {
@@ -45,10 +51,10 @@ public class Thread_eDVS extends Thread
 	byte XOFF				= 0x13;    /* Pause transmission */
 
 	//******************************** variables used to read data ******************************/
-	int usb_data_buffer 	= 32000; //2048
+	int buffer_size		 	= 0; //initialized in init() function
 	int bytesRead			= 0;
 	int readcount			= 0;
-	int totalBytesRead 		= 0;
+
 
 	/** Data that will be mapped into a bitmap for display*/
 	int[] data_image;
@@ -65,12 +71,11 @@ public class Thread_eDVS extends Thread
 	{
 		context_activity 	= ctxt;
 		processor 			= new EDVS4337SerialUsbStreamProcessor();		
-		usbdata 			= new byte[usb_data_buffer];
 		data_image 			= new int[128*128];
 
 		//get ftdi manager		
-		try {ftD2xx = D2xxManager.getInstance(context_activity);}
-		catch (D2xxManager.D2xxException e) {Log.e(TAG,"getInstance fail!!");}
+		try {	ftD2xx = D2xxManager.getInstance(context_activity);}
+		catch (	D2xxManager.D2xxException e) {Log.e(TAG,"getInstance fail!!");}
 	}
 
 	/**
@@ -92,10 +97,9 @@ public class Thread_eDVS extends Thread
 					readcount = ftDevice.getQueueStatus();	//get nb of bytes in receive queue
 					if (readcount > 0) 
 					{					
-						if(readcount > usb_data_buffer) readcount = usb_data_buffer;
+						if(readcount > buffer_size) readcount = buffer_size;
 
 						bytesRead = ftDevice.read(usbdata, readcount);	// read data
-						totalBytesRead += bytesRead;
 
 						//process data to get list of events
 						ArrayList<EDVS4337Event> events = processor.process(usbdata, bytesRead, EDVS4337SerialUsbStreamProcessor.EDVS4337EventMode.TS_MODE_E0);
@@ -103,14 +107,14 @@ public class Thread_eDVS extends Thread
 						for(int i=0; i<events.size(); i++) //create image data from events
 						{	
 							EDVS4337Event event = events.get(i);
-							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFFFFFF;
-							else 			 data_image[128*event.x + event.y] = 0x80808080;
+							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFFFFFF; //white
+							else 			 data_image[128*event.x + event.y] = 0x80808080; //grey
 							
-//							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000;
-//							else 			 data_image[128*event.x + event.y] = 0xFF00FF00; 
+//							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000; //red
+//							else 			 data_image[128*event.x + event.y] = 0xFF00FF00; //green
 						}
 						
-						Arrays.fill(usbdata, (byte) 0);	//reset usbdata...might not need this
+//						Arrays.fill(usbdata, (byte) 0);	//reset usbdata...might not need this
 					}
 				}
 			}	
@@ -128,11 +132,16 @@ public class Thread_eDVS extends Thread
 		Log.e(TAG,"Nb devices found: " + DevCount);
 		if(DevCount > 0)
 		{
-			ftDevice = ftD2xx.openByIndex(context_activity, 0);					
+			D2xxManager.DriverParameters param = new D2xxManager.DriverParameters();
+			buffer_size = param.getMaxBufferSize();
+			usbdata 	= new byte[buffer_size];
+			
+			ftDevice 	= ftD2xx.openByIndex(context_activity, 0, param);	
 			ftDevice.setBitMode((byte) 0, D2xxManager.FT_BITMODE_RESET); 		// reset to UART mode for 232 devices
 			ftDevice.setBaudRate(baudRate);
 			ftDevice.setDataCharacteristics(dataBit, stopBit, parity);
-			ftDevice.setFlowControl(flowControl, XON, XOFF);
+			ftDevice.setFlowControl(flowControl, XON, XOFF);			
+			
 
 			//send command to eDVS to start sending events
 			String ss = new String("E+\n");
@@ -150,7 +159,6 @@ public class Thread_eDVS extends Thread
 	public synchronized Bitmap get_image()
 	{
 		Bitmap ima = Bitmap.createBitmap(data_image, 128, 128,Bitmap.Config.ARGB_8888);
-//		Bitmap ima2 = Bitmap.createScaledBitmap(ima, 500, 500, false);
 		Arrays.fill(data_image, 0xFF000000);	//reset data_image
 		return ima;
 	}

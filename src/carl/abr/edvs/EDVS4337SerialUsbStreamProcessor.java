@@ -4,7 +4,12 @@ import java.util.ArrayList;
 
 /**
 *
-* @author Julien Martel, 2014
+* @author Nicolas Oros and Julien Martel, 2014
+* 
+* https://github.com/UCI-ABR
+* http://www.socsci.uci.edu/~jkrichma/ABR/
+* https://groups.google.com/forum/#!forum/android-based-robotics
+* https://neuromorphs.net/nm/wiki/AndroideDVS
 */
 public class EDVS4337SerialUsbStreamProcessor 
 {

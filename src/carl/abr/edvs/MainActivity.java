@@ -6,14 +6,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
 *
 * @author Nicolas Oros and Julien Martel, 2014
+* 
+* https://github.com/UCI-ABR
+* http://www.socsci.uci.edu/~jkrichma/ABR/
+* https://groups.google.com/forum/#!forum/android-based-robotics
+* https://neuromorphs.net/nm/wiki/AndroideDVS
 */
 public class MainActivity extends Activity 
 {
@@ -50,7 +52,8 @@ public class MainActivity extends Activity
 		
 		DisplayMetrics dm = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(dm);
-		width_image = dm.widthPixels/2;
+//		width_image = dm.widthPixels/2;
+		width_image = dm.heightPixels/2;
 		height_image = dm.heightPixels/2;
 	}
 
