@@ -45,7 +45,7 @@ public class Thread_eDVS extends Thread
 	byte XOFF				= 0x13;    /* Pause transmission */
 
 	//******************************** variables used to read data ******************************/
-	int USB_DATA_BUFFER 	= 64000; //2048
+	int usb_data_buffer 	= 32000; //2048
 	int bytesRead			= 0;
 	int readcount			= 0;
 	int totalBytesRead 		= 0;
@@ -65,7 +65,7 @@ public class Thread_eDVS extends Thread
 	{
 		context_activity 	= ctxt;
 		processor 			= new EDVS4337SerialUsbStreamProcessor();		
-		usbdata 			= new byte[USB_DATA_BUFFER];
+		usbdata 			= new byte[usb_data_buffer];
 		data_image 			= new int[128*128];
 
 		//get ftdi manager		
@@ -83,7 +83,7 @@ public class Thread_eDVS extends Thread
 
 		while(STOP == false)
 		{	
-			try {sleep(10);} catch (InterruptedException e) {Log.e(TAG,"pb sleep" +e);}
+//			try {sleep(10);} catch (InterruptedException e) {Log.e(TAG,"pb sleep" +e);}
 
 			synchronized(this)	//synchronized block of code so the activity handler and this Thread_eDVS do not access data at the same time
 			{	
@@ -92,7 +92,7 @@ public class Thread_eDVS extends Thread
 					readcount = ftDevice.getQueueStatus();	//get nb of bytes in receive queue
 					if (readcount > 0) 
 					{					
-						if(readcount > USB_DATA_BUFFER) readcount = USB_DATA_BUFFER;
+						if(readcount > usb_data_buffer) readcount = usb_data_buffer;
 
 						bytesRead = ftDevice.read(usbdata, readcount);	// read data
 						totalBytesRead += bytesRead;
@@ -103,8 +103,11 @@ public class Thread_eDVS extends Thread
 						for(int i=0; i<events.size(); i++) //create image data from events
 						{	
 							EDVS4337Event event = events.get(i);
-							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000;
-							else 			 data_image[128*event.x + event.y] = 0xFF00FF00;
+							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFFFFFF;
+							else 			 data_image[128*event.x + event.y] = 0x80808080;
+							
+//							if(event.p == 0) data_image[128*event.x + event.y] = 0xFFFF0000;
+//							else 			 data_image[128*event.x + event.y] = 0xFF00FF00; 
 						}
 						
 						Arrays.fill(usbdata, (byte) 0);	//reset usbdata...might not need this
@@ -147,9 +150,9 @@ public class Thread_eDVS extends Thread
 	public synchronized Bitmap get_image()
 	{
 		Bitmap ima = Bitmap.createBitmap(data_image, 128, 128,Bitmap.Config.ARGB_8888);
-		Bitmap ima2 = Bitmap.createScaledBitmap(ima, 500, 500, false);
+//		Bitmap ima2 = Bitmap.createScaledBitmap(ima, 500, 500, false);
 		Arrays.fill(data_image, 0xFF000000);	//reset data_image
-		return ima2;
+		return ima;
 	}
 
 	/**
