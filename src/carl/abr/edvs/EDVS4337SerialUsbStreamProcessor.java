@@ -98,7 +98,7 @@ public class EDVS4337SerialUsbStreamProcessor
 	{
 		mEvents 				= new ArrayList<EDVS4337Event>();
 		mImuEvents 				= new ArrayList<EDVS4337ImuEvent>();
-		mEDVSinCollection 		= new int[512];
+		mEDVSinCollection 		= new int[20000]; //was 512
 		mAsciiData 				= new String();
 		mEDVSTimestamp 			= 0;		
 		mInputProcessingIndex 	= 0;
@@ -115,6 +115,8 @@ public class EDVS4337SerialUsbStreamProcessor
 	{		
 		if(mEvents.isEmpty()==false) 	mEvents.clear();
 		if(mImuEvents.isEmpty()==false) mImuEvents.clear();
+		
+//		ArrayList<EDVS4337Event>     mEvents	 = new ArrayList<EDVS4337Event>();
 		
 		for (int n = 0; n < bytesRead; n++) 
 		{								
